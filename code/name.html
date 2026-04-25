@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Disaster Manager</title>
+  <style>
+
+    * { 
+        box-sizing: border-box;
+         margin: 0;
+          padding: 0; }
+    html, body { 
+        height: 100%; 
+        font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif; 
+        background: linear-gradient(135deg,#f4f5f8,#4fbff7);
+        color: #07203a;
+     }
+
+    a { color: inherit; 
+        text-decoration: none; }
+
+
+    .site-header {
+      position:fixed;
+      top: 18px;
+      left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 20;
+    }
+
+    .site-title {
+         font-size: 50px;
+         
+          font-weight: 700;
+           color: #07203a; 
+            
+    }
+    .site-desc { font-size: 16.5px;
+            
+         color: #3b556f;
+          max-width: 320px;
+        
+    }
+
+
+    .container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 20px;
+      border: #000 20px;
+      
+    }
+
+    .panel {
+      width: 100%;
+      max-width: 920px;
+      background: linear-gradient(180deg,#ffffff,#f3f8ff);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(7,32,58,0.08);
+      padding: 28px;
+      animation: fadeIn 1.2s ease-in-out;
+    }
+
+    .nav {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .nav button {
+      border: none;
+      background: transparent;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      color: #07203a;
+    }
+    .nav button.active {
+      background: linear-gradient(90deg,#2b8cff,#6fb8ff);
+      color: white;
+      box-shadow: 0 6px 18px rgba(43,140,255,0.18);
+    }
+
+    form { display: grid;
+         gap: 12px;
+         }
+    label { font-size: 13px; 
+        color: #0b2545;
+         font-weight: 600; 
+        }
+    .row { display:flex;
+         gap:12px;
+          align-items:center; 
+        }
+
+    .input, select, textarea {
+      width:100%;
+      padding:10px 12px;
+      border-radius:8px;
+      border:1px solid #dbe8ff;
+      background: #fff;
+      font-size:14px;
+      color:#07203a;
+    }
+    textarea { min-height:100px;
+         resize:vertical; }
+
+    .inline {
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+
+    .urgency {
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .urgency button {
+      padding:8px 12px;
+      border-radius:8px;
+      border:1px solid transparent;
+      cursor:pointer;
+      font-weight:700;
+      color:#fff;
+      min-width:86px;
+    }
+    .urgency .low { background:#2ecc71; }
+    .urgency .medium { background:#f1c40f; color:#111; }
+    .urgency .high { background:#e74c3c; }
+
+    .actions { display:flex; gap:12px; margin-top:8px; }
+    .btn {
+      padding:10px 14px;
+      border-radius:10px;
+      
+      cursor:pointer;
+      font-weight:700;
+      font-size:14px;
+    }
+     :hover .btn{
+        border: none;
+    }
+    .btn-primary { background:#2b8cff; color:#fff; box-shadow:0 8px 20px rgba(43,140,255,0.12); }
+    .btn-ghost { background:#fff; border:1px solid #d6e3f5; color:#07203a; }
+
+    /* Dashboard cards */
+    .cards { display:grid; gap:12px; margin-top:12px; }
+    .card {
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px;
+      border-radius:10px;
+      background:#fff;
+      border:1px solid #e6f0ff;
+      align-items:flex-start;
+    }
+    .card .left { flex:1; }
+    .card .meta { display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; font-size:13px; color:#3b556f; }
+    .badge {
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:700;
+      font-size:13px;
+      color:#fff;
+    }
+    .badge.low { background:#2ecc71; color:#063b1f; }
+    .badge.medium { background:#f1c40f; color:#3b2f00; }
+    .badge.high { background:#e74c3c; color:#fff; }
+
+    .status {
+      font-weight:700;
+      padding:6px 10px;
+      border-radius:8px;
+      font-size:13px;
+    }
+    .status.pending { background:#fff4e6; color:#7a4b00; border:1px solid #ffe6b3; }
+    .status.accepted { background:#e6fff0; color:#0b6b3a; border:1px solid #bff0d1; }
+    .status.completed { background:#eef6ff; color:#0b3a6b; border:1px solid #cfe6ff; }
+
+    .card-actions { display:flex; gap:8px; flex-direction:column; align-items:flex-end; min-width:160px; }
+    .small { padding:8px 10px; border-radius:8px; border:none; cursor:pointer; font-weight:700; }
+    .accept { background:#2ecc71; color:#fff; }
+    .complete { background:#6fb8ff; color:#fff; }
+    .delete { background:#ff6b6b; color:#fff; }
+
+    /* Empty state */
+    .empty { text-align:center; color:#3b556f; padding:28px; border-radius:8px; background:#fbfdff; border:1px dashed #dbe8ff; }
+
+    /* Responsive */
+    @media (max-width:720px) {
+      .card { flex-direction:column; align-items:stretch; }
+      .card-actions { flex-direction:row; justify-content:space-between; width:100%; }
+      .site-title { font-size:22px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="site-title">CrisisConnect</div>
+    <div class="site-desc">From Crisis To Care: Fast, Focused, Community-Led</div>
+  </header>
+
+  <main class="container" role="main">
+    <section class="panel" aria-labelledby="panel-title">
+      <div class="nav" role="navigation" aria-label="Main navigation">
+        <button id="nav-home" class="active" data-view="home">Home</button>
+        <button id="nav-request" data-view="request">Request Help Form</button>
+        <button id="nav-dashboard" data-view="dashboard">Volunteer Dashboard</button>
+      </div>
+
+
+      <div id="view-home" class="view">
+        <h2 id="panel-title" style="margin-bottom:8px;">Welcome</h2>
+        <p style="color:#3b556f; margin-bottom:14px;">Choose an option to request help or manage volunteer responses.</p>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <button class="btn btn-primary" id="go-request">Request Help Form</button>
+          <button class="btn btn-ghost" id="go-dashboard">Volunteer Dashboard</button>
+        </div>
+      </div>
+
+
+      <div id="view-request" class="view" style="display:none;">
+        <h2 style="margin-bottom:8px;">Request Help</h2>
+        <form id="request-form" aria-label="Request help form">
+          <div>
+            <label for="name">Name</label>
+            <div class="row">
+              <input id="name" class="input" type="text" placeholder="Your full name" />
+              <label class="inline" style="font-weight:600;">
+                <input id="anonymous" type="checkbox" style="margin-right:8px;" />
+                Submit anonymously
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <label for="location">Location</label>
+            <input id="location" class="input" type="text" placeholder="City, landmark, or coordinates" required />
+          </div>
+
+          <div>
+            <label for="helpType">Help Type</label>
+            <select id="helpType" class="input" required>
+              <option value="">Select help type</option>
+              <option>Medical Assistance</option>
+              <option>Food and Water</option>
+              <option>Shelter</option>
+              <option>Search and Rescue</option>
+              <option>Evacuation</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Urgency</label>
+            <div class="urgency" role="radiogroup" aria-label="Urgency">
+              <button type="button" class="low" data-urgency="low" aria-pressed="false">Low</button>
+              <button type="button" class="medium" data-urgency="medium" aria-pressed="false">Medium</button>
+              <button type="button" class="high" data-urgency="high" aria-pressed="false">High</button>
+            </div>
+          </div>
+
+          <div>
+            <label for="details">Details</label>
+            <textarea id="details" placeholder="Describe the situation, number of people affected, special needs, etc."></textarea>
+          </div>
+
+          <div class="actions">
+            <button type="submit" class="btn btn-primary">Submit Request</button>
+            <button type="button" id="reset-form" class="btn btn-ghost">Reset</button>
+          </div>
+        </form>
+
+        <div id="after-submit" style="margin-top:12px;"></div>
+      </div>
+
+
+      <div id="view-dashboard" class="view" style="display:none;">
+        <h2 style="margin-bottom:8px;">Volunteer Dashboard</h2>
+        <p style="color:#3b556f; margin-bottom:12px;">All submitted requests appear below. Accept a request to change its status.</p>
+        <div id="cards" class="cards" aria-live="polite"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Simple single-file app using localStorage
+    const views = {
+      home: document.getElementById('view-home'),
+      request: document.getElementById('view-request'),
+      dashboard: document.getElementById('view-dashboard')
+    };
+    const navButtons = document.querySelectorAll('.nav button');
+    function showView(name) {
+      Object.keys(views).forEach(k => views[k].style.display = (k === name) ? '' : 'none');
+      navButtons.forEach(b => b.classList.toggle('active', b.dataset.view === name));
+      // update URL hash for direct linking
+      history.replaceState(null, '', '#' + name);
+      if (name === 'dashboard') renderCards();
+    }
+
+    // Initialize view from hash
+    const initial = location.hash.replace('#','') || 'home';
+    showView(initial in views ? initial : 'home');
+
+    // Nav handlers
+    navButtons.forEach(b => b.addEventListener('click', () => showView(b.dataset.view)));
+    document.getElementById('go-request').addEventListener('click', () => showView('request'));
+    document.getElementById('go-dashboard').addEventListener('click', () => showView('dashboard'));
+
+    // Form elements
+    const form = document.getElementById('request-form');
+    const nameInput = document.getElementById('name');
+    const anonymousCheckbox = document.getElementById('anonymous');
+    const locationInput = document.getElementById('location');
+    const helpType = document.getElementById('helpType');
+    const details = document.getElementById('details');
+    const urgencyButtons = document.querySelectorAll('.urgency button');
+    let selectedUrgency = 'low'; // default
+
+    // Set default urgency visual
+    function setUrgency(u) {
+      selectedUrgency = u;
+      urgencyButtons.forEach(btn => {
+        const is = btn.dataset.urgency === u;
+        btn.setAttribute('aria-pressed', is ? 'true' : 'false');
+        btn.style.outline = is ? '3px solid rgba(0,0,0,0.06)' : 'none';
+      });
+    }
+    urgencyButtons.forEach(btn => {
+      btn.addEventListener('click', () => setUrgency(btn.dataset.urgency));
+    });
+    setUrgency('low');
+
+    // Storage helpers
+    const STORAGE_KEY = 'disaster_manager_requests_v1';
+    function loadRequests() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+    function saveRequests(list) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    }
+
+    // Create request object
+    function createRequest(data) {
+      const id = 'r_' + Date.now() + '_' + Math.floor(Math.random()*9000+1000);
+      return { id, ...data, status: 'pending', createdAt: new Date().toISOString() };
+    }
+
+    // Form submit
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const nameVal = anonymousCheckbox.checked || !nameInput.value.trim() ? 'Anonymous' : nameInput.value.trim();
+      const loc = locationInput.value.trim();
+      const type = helpType.value || 'Other';
+      const det = details.value.trim();
+      if (!loc) {
+        alert('Please enter a location.');
+        return;
+      }
+      const req = createRequest({
+        requester: nameVal,
+        location: loc,
+        helpType: type,
+        details: det,
+        urgency: selectedUrgency
+      });
+      const list = loadRequests();
+      list.unshift(req);
+      saveRequests(list);
+      // show confirmation and reset
+      document.getElementById('after-submit').innerHTML = `
+        <div class="empty">Request submitted and is now <strong>Pending</strong>. You can view it on the Volunteer Dashboard.</div>
+      `;
+      form.reset();
+      setUrgency('low');
+      // keep anonymous checkbox unchecked visually
+      anonymousCheckbox.checked = false;
+      // show dashboard
+      showView('dashboard');
+    });
+
+    // Reset form
+    document.getElementById('reset-form').addEventListener('click', () => {
+      form.reset();
+      setUrgency('low');
+      anonymousCheckbox.checked = false;
+    });
+
+    // Render cards in dashboard
+    function renderCards() {
+      const container = document.getElementById('cards');
+      const list = loadRequests();
+      container.innerHTML = '';
+      if (!list.length) {
+        container.innerHTML = '<div class="empty">No requests yet. New requests will appear here as cards.</div>';
+        return;
+      }
+      list.forEach(req => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        // left content
+        const left = document.createElement('div');
+        left.className = 'left';
+        left.innerHTML = `
+          <div style="display:flex;gap:10px;align-items:center;">
+            <div style="font-weight:800;font-size:15px;">${escapeHtml(req.helpType)}</div>
+            <div class="badge ${escapeHtml(req.urgency)}">${capitalize(req.urgency)}</div>
+          </div>
+          <div class="meta">
+            <div><strong>Requester</strong> ${escapeHtml(req.requester)}</div>
+            <div><strong>Location</strong> ${escapeHtml(req.location)}</div>
+            <div><strong>Submitted</strong> ${new Date(req.createdAt).toLocaleString()}</div>
+          </div>
+          <div style="margin-top:8px;color:#3b556f;">${escapeHtml(req.details || 'No additional details provided')}</div>
+        `;
+        // right actions
+        const right = document.createElement('div');
+        right.className = 'card-actions';
+        const statusEl = document.createElement('div');
+        statusEl.className = 'status ' + (req.status === 'pending' ? 'pending' : req.status === 'accepted' ? 'accepted' : 'completed');
+        statusEl.textContent = capitalize(req.status);
+        right.appendChild(statusEl);
+
+        // Accept button
+        const acceptBtn = document.createElement('button');
+        acceptBtn.className = 'small accept';
+        acceptBtn.textContent = req.status === 'accepted' ? 'Accepted' : 'Accept';
+        acceptBtn.disabled = req.status === 'accepted' || req.status === 'completed';
+        acceptBtn.addEventListener('click', () => {
+          updateRequestStatus(req.id, 'accepted');
+        });
+        right.appendChild(acceptBtn);
+
+        // Complete button
+        const completeBtn = document.createElement('button');
+        completeBtn.className = 'small complete';
+        completeBtn.textContent = 'Mark Completed';
+        completeBtn.disabled = req.status !== 'accepted';
+        completeBtn.addEventListener('click', () => {
+          updateRequestStatus(req.id, 'completed');
+        });
+        right.appendChild(completeBtn);
+
+        // Delete button
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'small delete';
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.addEventListener('click', () => {
+          if (confirm('Delete this request?')) {
+            deleteRequest(req.id);
+          }
+        });
+        right.appendChild(deleteBtn);
+
+        card.appendChild(left);
+        card.appendChild(right);
+        container.appendChild(card);
+      });
+    }
+
+    // Update status
+    function updateRequestStatus(id, newStatus) {
+      const list = loadRequests();
+      const idx = list.findIndex(r => r.id === id);
+      if (idx === -1) return;
+      list[idx].status = newStatus;
+      saveRequests(list);
+      renderCards();
+    }
+
+    // Delete
+    function deleteRequest(id) {
+      let list = loadRequests();
+      list = list.filter(r => r.id !== id);
+      saveRequests(list);
+      renderCards();
+    }
+
+    // Utilities
+    function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // Render on load
+    renderCards();
+
+    // Optional: handle hash changes (back/forward)
+    window.addEventListener('hashchange', () => {
+      const h = location.hash.replace('#','') || 'home';
+      if (h in views) showView(h);
+    });
+  </script>
+</body>
+</html>
